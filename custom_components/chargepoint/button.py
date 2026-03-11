@@ -31,4 +31,4 @@ async def async_setup_entry(hass, entry, async_add_entities):
         entities.append(RestartButton(client, coordinator, ButtonEntityDescription(key="restart", name_suffix="Restart", device_class=ButtonDeviceClass.RESTART), cid))
         entities.append(StartButton(client, coordinator, ButtonEntityDescription(key="start", name_suffix="Start", icon="mdi:play"), cid))
         entities.append(StopButton(client, coordinator, ButtonEntityDescription(key="stop", name_suffix="Stop", icon="mdi:stop"), cid))
-    async_add_entities(entities)
+    async_add_entities(entities) 
