@@ -7,7 +7,7 @@ from typing import Optional
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ACCESS_TOKEN, CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -15,7 +15,6 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 from python_chargepoint import ChargePoint
-from python_chargepoint.exceptions import ChargePointInvalidSession, ChargePointLoginError
 from python_chargepoint.session import ChargingSession
 from python_chargepoint.types import ChargePointAccount, HomeChargerStatus, HomeChargerTechnicalInfo
 
@@ -44,7 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER.warning("ChargePoint setup failed (likely 403 block): %s", exc)
         raise ConfigEntryNotReady from exc
 
-    async def async_update_data(is_retry=False):
+    async def async_update_data():
         try:
             data = {ACCT_INFO: None, ACCT_CRG_STATUS: None, ACCT_SESSION: None, ACCT_HOME_CRGS: {}}
             data[ACCT_INFO] = await hass.async_add_executor_job(client.get_account)
@@ -58,11 +57,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             return data
         except Exception as err:
             if "403" in str(err):
-                _LOGGER.error("403 Blocked. Backing off for 1 hour.")
+                _LOGGER.error("ChargePoint 403 Blocked. Backing off for 1 hour.")
                 raise UpdateFailed(retry_after=3600) from err
             raise UpdateFailed(err) from err
 
-    coordinator = DataUpdateCoordinator(hass, _LOGGER, name=DOMAIN, update_method=async_update_data, update_interval=timedelta(seconds=entry.options.get(OPTION_POLL_INTERVAL, POLL_INTERVAL_DEFAULT)))
+    coordinator = DataUpdateCoordinator(hass, _LOGGER, name=DOMAIN, update_method=async_update_data, 
+                                        update_interval=timedelta(seconds=entry.options.get(OPTION_POLL_INTERVAL, POLL_INTERVAL_DEFAULT)))
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {DATA_CLIENT: client, DATA_COORDINATOR: coordinator}
     await coordinator.async_config_entry_first_refresh()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -70,13 +70,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-
-class ChargePointEntity(CoordinatorEntity):
-    def __init__(self, client, coordinator):
-        super().__init__(coordinator)
-        self.client = client
-    @property
-    def account(self) -> ChargePointAccount: return self.coordinator.data[ACCT_INFO]
 
 class ChargePointChargerEntity(CoordinatorEntity):
     def __init__(self, client, coordinator, charger_id):
