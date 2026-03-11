@@ -21,8 +21,6 @@ from homeassistant.helpers.update_coordinator import (
 )
 from python_chargepoint import ChargePoint
 from python_chargepoint.exceptions import (
-    ChargePointBaseException,
-    ChargePointCommunicationException,
     ChargePointInvalidSession,
     ChargePointLoginError,
 )
@@ -31,7 +29,6 @@ from python_chargepoint.types import (
     ChargePointAccount,
     HomeChargerStatus,
     HomeChargerTechnicalInfo,
-    UserChargingStatus,
 )
 
 from .const import (
@@ -42,14 +39,12 @@ from .const import (
     DATA_CLIENT,
     DATA_COORDINATOR,
     DOMAIN,
-    ISSUE_URL,
     OPTION_POLL_INTERVAL,
     POLL_INTERVAL_DEFAULT,
-    VERSION,
 )
 
-# Stealth User-Agent
-BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+# Modern User-Agent to mimic a real person
+BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -59,17 +54,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     password = entry.data[CONF_PASSWORD]
     session_token = entry.data.get(CONF_ACCESS_TOKEN)
 
-    # Create the stealth session but DO NOT save it to the entry data
+    # Use a shared stealth session for all requests
     stealth_session = requests.Session()
     stealth_session.headers.update({"User-Agent": BROWSER_USER_AGENT})
 
     try:
-        # Initialize client with the session
         client = await hass.async_add_executor_job(
             ChargePoint, username, password, session_token, stealth_session
         )
 
-        # Only update the entry with the simple STRING token, not the Session object
+        # Update entry with the STRING token ONLY (prevents JSON serialization error)
         if client.session_token != session_token:
             hass.config_entries.async_update_entry(
                 entry, data={**entry.data, CONF_ACCESS_TOKEN: client.session_token}
@@ -77,35 +71,42 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     except ChargePointLoginError as exc:
         raise ConfigEntryAuthFailed("Invalid credentials") from exc
     except Exception as exc:
-        _LOGGER.error("ChargePoint setup error: %s", exc)
+        # If we hit a 403 block during setup, tell HA to wait before retrying
+        _LOGGER.warning("ChargePoint is blocking requests (403). Retrying later.")
         raise ConfigEntryNotReady from exc
 
     async def async_update_data(is_retry: bool = False):
-        data = {ACCT_INFO: None, ACCT_CRG_STATUS: None, ACCT_SESSION: None, ACCT_HOME_CRGS: {}}
         try:
+            data = {ACCT_INFO: None, ACCT_CRG_STATUS: None, ACCT_SESSION: None, ACCT_HOME_CRGS: {}}
             data[ACCT_INFO] = await hass.async_add_executor_job(client.get_account)
             data[ACCT_CRG_STATUS] = await hass.async_add_executor_job(client.get_user_charging_status)
+            
             if data[ACCT_CRG_STATUS]:
                 data[ACCT_SESSION] = await hass.async_add_executor_job(
                     client.get_charging_session, data[ACCT_CRG_STATUS].session_id
                 )
+
             home_chargers = await hass.async_add_executor_job(client.get_home_chargers)
             for charger in home_chargers:
                 status = await hass.async_add_executor_job(client.get_home_charger_status, charger)
                 tech = await hass.async_add_executor_job(client.get_home_charger_technical_info, charger)
                 data[ACCT_HOME_CRGS][charger] = (status, tech)
             return data
+
         except ChargePointInvalidSession:
             if not is_retry:
                 await hass.async_add_executor_job(client.login, username, password)
-                # Save only the token string
                 hass.config_entries.async_update_entry(
                     entry, data={**entry.data, CONF_ACCESS_TOKEN: client.session_token}
                 )
                 return await async_update_data(is_retry=True)
-            raise ConfigEntryAuthFailed("Session refresh failed")
+            raise ConfigEntryAuthFailed("Session expired")
         except Exception as err:
-            raise UpdateFailed(f"Cloud Error: {err}") from err
+            # BACK-OFF STRATEGY: If we see a 403 error, tell HA to wait 3600 seconds (1 hour)
+            if "403" in str(err):
+                _LOGGER.error("ChargePoint 403 Blocked. Backing off for 1 hour.")
+                raise UpdateFailed(retry_after=3600) from err
+            raise UpdateFailed(f"Error: {err}") from err
 
     poll_interval = entry.options.get(OPTION_POLL_INTERVAL, POLL_INTERVAL_DEFAULT)
     coordinator = DataUpdateCoordinator(
@@ -119,10 +120,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 class ChargePointEntity(CoordinatorEntity):
     def __init__(self, client, coordinator):
