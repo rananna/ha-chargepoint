@@ -18,7 +18,7 @@ A cloud-polling Home Assistant component to expose ChargePoint Home Charger and 
 1.  Ensure **HACS** is installed in your Home Assistant instance.
 2.  Navigate to **HACS > Integrations**.
 3.  Click the **three dots** in the top right corner and select **Custom repositories**.
-4.  Paste the URL of this repository: `https://github.com/rananna/ha-chargepoint-custom`
+4.  Paste the URL of this repository: `https://github.com/rananna/ha-chargepoint`
 5.  Select **Integration** as the category and click **Add**.
 6.  Search for **ChargePoint Custom Stealth** and click **Download**.
 7.  **Restart Home Assistant.**
@@ -45,9 +45,3 @@ This version includes a dedicated `binary_sensor` for your charger status. Unlik
 ## Development and Contributing
 
 If you notice any issues, please create a GitHub issue describing the error and include any error messages or stack traces from your Home Assistant logs.
-
-### Running the Integration (Docker)
-
-A simple Docker Compose file is included to launch a test Home Assistant instance with the integration pre-installed:
-```shell
-docker-compose up -d
