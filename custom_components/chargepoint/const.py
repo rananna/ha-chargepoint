@@ -7,11 +7,12 @@ VERSION = "1.1.5"
 ISSUE_URL = "https://github.com/rananna/ha-chargepoint/issues"
 
 # Platforms active in v1.1.5
-# Note: Switch and Select are reserved for future enhancements (Amperage/Modes)
 PLATFORMS = [
     Platform.SENSOR, 
     Platform.BINARY_SENSOR, 
-    Platform.BUTTON
+    Platform.BUTTON,
+    Platform.SELECT,
+    Platform.SWITCH
 ]
 
 CONF_USERNAME = "username"
@@ -37,8 +38,13 @@ ACCT_HOME_CRGS = "home_chargers"
 DATA_CLIENT = "chargepoint_client"
 DATA_COORDINATOR = "coordinator"
 
+# --- FIXED CONSTANTS ---
+# Required for session state checks in switch.py
 CHARGER_SESSION_STATE_IN_USE = "IN_USE"
+
+# Required for standardized error logging in switch.py and select.py
 EXCEPTION_WARNING_MSG = (
     "ChargePoint returned an exception. This may be a temporary "
     "API lockout (403) or a connection timeout."
 )
+# -----------------------
