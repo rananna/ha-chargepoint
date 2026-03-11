@@ -1,7 +1,7 @@
 # ChargePoint for Home Assistant (Custom Stealth) ⚡
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.1.4-orange.svg)
+![Version](https://img.shields.io/badge/version-1.1.5-orange.svg)
 
 A professional-grade fork of the ChargePoint integration, hardened for 2026 security standards and optimized for Home Flex hardware (tested with Hyundai IONIQ 6).
 
@@ -9,42 +9,30 @@ A professional-grade fork of the ChargePoint integration, hardened for 2026 secu
 
 ## 🔄 Changes from Original Fork (@mbillow)
 
-This fork was created to address critical stability issues and functional gaps in the original integration. Below are the key improvements:
+This fork addresses critical stability issues and adds full "write" capability for charger control:
 
-### 🛡️ Security & Anti-Bot Bypassing
-- **Chrome 123 Stealth Headers:** Replaces generic Python headers with a modern browser identity to bypass **DataDome/Cloudflare 403 Forbidden** blocks.
-- **Smart Back-off Logic:** If the API returns a 403 error, the integration automatically enters a "cool-down" period for **60 minutes** rather than spamming requests and risking a permanent IP ban.
+### 🛡️ Security & Stability
+- **Stealth User-Agent:** Mimics Chrome 123 to bypass DataDome 403 blocks.
+- **Auto-Backoff:** Detects 403 errors and automatically pauses updates for **60 minutes** to protect your IP address.
+- **Math Safety:** Helpers to prevent crashes on null/empty API responses.
 
-### 🕹️ New Active Controls (Write Access)
-The original integration was "Read-Only." This version adds a new **Button Platform**:
-- **Start Charge:** Manually trigger a charging session from your dashboard.
-- **Stop Charge:** Cease an active session remotely.
-- **Restart Charger:** Soft-reboot the Home Flex hardware via the Cloud API.
+### 🕹️ Active Control (Write Access)
+Adds a new **Button Platform** for direct hardware control:
+- **Start / Stop Charge:** Control your session directly from the UI.
+- **Restart Charger:** Soft-reboot the hardware via the cloud API.
 
-### 📊 Data Integrity & Math Safety
-- **Zero-Value Protection:** Added safety helpers to prevent `TypeError` crashes when the API returns `None` or `NaN` (common during vehicle handshake).
-- **Energy Dashboard Persistence:** Implemented `TOTAL_INCREASING` logic with "Last Known Value" memory. This prevents massive negative spikes in the Energy Dashboard when a session ends and data temporarily resets to zero.
-
-### 📡 Advanced Diagnostics
-- **Wi-Fi Signal Strength (RSSI):** Real-time monitoring of your charger's connection quality to help troubleshoot dropouts.
-- **Last Cloud Heartbeat:** A timestamped sensor showing exactly when the charger last successfully communicated with ChargePoint.
+### 📊 Advanced Diagnostics
+- **Wi-Fi Signal (RSSI):** Monitor connection quality in the garage.
+- **Last Heartbeat:** Tracks precisely when the charger last checked in.
+- **Energy Stability:** Fixed Energy Dashboard spikes using `TOTAL_INCREASING` persistence.
 
 ---
 
 ## 🛠️ Installation
 
-1. Open **HACS** in Home Assistant.
-2. Go to **Integrations** > **Three Dots (Top Right)** > **Custom Repositories**.
-3. Add: `https://github.com/rananna/ha-chargepoint` as an **Integration**.
-4. Download **v1.1.4** and **Restart Home Assistant**.
-
-## ⚠️ Troubleshooting 403 Errors
-If your integration shows "Needs Attention" or a 403 in the logs:
-- **Do not restart it repeatedly.** The new code will automatically wait 1 hour.
-- If persistent, **Disable** for 24 hours to reset your IP reputation with DataDome.
-- Cycling your home modem to get a fresh IP address is often an instant fix.
-
----
+1. Add `https://github.com/rananna/ha-chargepoint` as a Custom Repository in **HACS**.
+2. Download **v1.1.5** and **Restart Home Assistant**.
+3. **Important:** If you have an old version installed, delete the integration entry from "Devices & Services" and add it fresh to clear database errors.
 
 ## 📝 Credits
-Based on the original work by **@mbillow**. Maintained and enhanced by **@rananna** for superior reliability and control.
+Based on the original work by **@mbillow**. Enhanced by **@rananna**.
