@@ -1,5 +1,6 @@
 {
-  "name": "ChargePoint",
-  "content_in_root": false,
-  "render_readme": true
+  "name": "ChargePoint Custom Stealth",
+  "content_builder": "web",
+  "domains": ["chargepoint"],
+  "homeassistant": "2024.1.0"
 }
