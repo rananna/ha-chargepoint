@@ -1,7 +1,7 @@
 {
   "domain": "chargepoint",
   "name": "ChargePoint (Custom Stealth)",
-  "codeowners": ["@yourusername"],
+  "codeowners": ["@rananna"],
   "config_flow": true,
   "documentation": "https://github.com/rananna/ha-chargepoint-custom",
   "iot_class": "cloud_polling",
