@@ -1,0 +1,6 @@
+{
+  "name": "ChargePoint Custom Stealth",
+  "content_builder": "web",
+  "domains": ["chargepoint"],
+  "homeassistant": "2024.1.0"
+}
