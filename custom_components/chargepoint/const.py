@@ -1,67 +1,33 @@
-"""Config flow for ChargePoint."""
-import logging
-import voluptuous as vol
-from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_ACCESS_TOKEN
-from homeassistant.core import callback
-from python_chargepoint import ChargePoint
-from python_chargepoint.exceptions import ChargePointLoginError, ChargePointCommunicationException
+"""Constants for ChargePoint."""
+from homeassistant.const import Platform
 
-from .const import DOMAIN, OPTION_POLL_INTERVAL, POLL_INTERVAL_DEFAULT, POLL_INTERVAL_OPTIONS
+NAME = "ChargePoint"
+DOMAIN = "chargepoint"
+VERSION = "1.1.0"
+ISSUE_URL = "https://github.com/yourusername/ha-chargepoint-custom/issues"
 
-_LOGGER = logging.getLogger(__name__)
+# Platforms - Added BINARY_SENSOR for the new "EV Connected" entity
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH, Platform.SELECT, Platform.BUTTON]
 
-class ChargePointFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for ChargePoint."""
-    VERSION = 1
+CONF_USERNAME = "username"
+CONF_PASSWORD = "password"
+OPTION_POLL_INTERVAL = "poll_interval"
 
-    async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
-        errors = {}
-        if user_input is not None:
-            try:
-                client = await self.hass.async_add_executor_job(
-                    ChargePoint, user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
-                )
-                return self.async_create_entry(
-                    title=user_input[CONF_USERNAME], 
-                    data={**user_input, CONF_ACCESS_TOKEN: client.session_token}
-                )
-            except ChargePointLoginError as exc:
-                error_id = exc.response.json().get("errorId")
-                errors["base"] = "account_locked" if error_id == 241 else "invalid_auth"
-            except Exception:
-                errors["base"] = "cannot_connect"
+# Safer polling intervals to prevent 403 Forbidden blocks
+POLL_INTERVAL_OPTIONS = {
+    900: "15 minutes",
+    1800: "30 minutes",
+    3600: "1 hour",
+}
+POLL_INTERVAL_DEFAULT = 900
 
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema({
-                vol.Required(CONF_USERNAME): str,
-                vol.Required(CONF_PASSWORD): str,
-            }),
-            errors=errors,
-        )
+TOKEN_FILE_NAME = "chargepoint_session.json"
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        return ChargePointOptionsFlowHandler(config_entry)
+# Data Mapping (Matches your existing integration structure)
+ACCT_INFO = "account_information"
+ACCT_CRG_STATUS = "charging_status"
+ACCT_SESSION = "charging_session"
+ACCT_HOME_CRGS = "home_chargers"
 
-class ChargePointOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for ChargePoint."""
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None):
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema({
-                vol.Optional(
-                    OPTION_POLL_INTERVAL,
-                    default=self.config_entry.options.get(OPTION_POLL_INTERVAL, POLL_INTERVAL_DEFAULT),
-                ): vol.In(POLL_INTERVAL_OPTIONS),
-            }),
-        )
+DATA_CLIENT = "chargepoint_client"
+DATA_COORDINATOR = "coordinator"
