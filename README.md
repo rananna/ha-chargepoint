@@ -1,47 +1,46 @@
 # ChargePoint for Home Assistant (Custom Stealth)
 
-A cloud-polling Home Assistant component to expose ChargePoint Home Charger and Account information. This version is a "bulletproofed" fork of the original integration, specifically modified to bypass modern cloud security blocks and prevent common math-related crashes.
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+![Version](https://img.shields.io/badge/version-1.1.3-orange.svg)
 
-![home assistant entities](https://github.com/rananna/ha-chargepoint/raw/main/.github/images/ha_chargepoint_sensor_card.png)
+A "bulletproofed" fork of the original ChargePoint integration. This version is specifically optimized for **2026 security standards**, adding stealth layers to bypass DataDome bot-blocking and robust safety nets for the Home Assistant Energy Dashboard.
 
-## Key Improvements in this Version
+## 🚀 Key Enhancements (v1.1.3)
 
-* **Stealth User-Agent:** Injects a modern browser identity to bypass `403 Forbidden` / DataDome bot-blocking screens.
-* **Math Safety Nets:** Intercepts `None` or empty string values from the API for Power, Energy, and Time sensors to prevent `TypeError` crashes.
-* **Binary Sensors:** Adds native `binary_sensor` entities for "Plugged In" status, enabling proper dashboard icons and simpler automations.
-* **Fixed Session Persistence:** Corrects a bug where refreshed session tokens weren't saved to the config entry, leading to frequent logouts and 403 blocks.
+- **DataDome Bypass:** Injects a verified **Chrome 123** User-Agent to prevent the common `403 Forbidden` CAPTCHA lockout.
+- **Fail-Safe Math:** Custom helpers intercept `None` or `NaN` API responses during vehicle handshakes, preventing `TypeError` from crashing the integration.
+- **Energy Dashboard Stability:** Implemented `TOTAL_INCREASING` persistence. Sensors will hold their last known value if the API temporarily reports zero, preventing massive energy spikes.
+- **Binary "Plug" Logic:** Replaces the text-based status for cable connection with a native `binary_sensor` for immediate dashboard feedback and cleaner automations.
 
-## Installation
+## 📊 Available Entities
+
+### 👤 Account Level
+* **Account Balance:** Your current wallet balance and currency.
+* **User Profile:** (Attribute) Displays your ChargePoint User ID and Username.
+
+### 🔌 Home Charger (Per Device)
+* **Charging Status:** Real-time state (Available, Charging, Finishing, etc.).
+* **Plugged In (Binary):** Native plug icon that reflects the physical connection.
+* **Power Output:** Current draw in **kW**.
+* **Energy Output:** Cumulative energy for the current session in **kWh**.
+* **Charging Time:** Duration of current session in seconds (auto-formatted by HA).
+* **Miles Added:** Estimated range added based on your vehicle's efficiency.
+* **Charge Cost:** Real-time cost calculation based on your utility rate.
+* **Technical Info:** (Attributes) Software version, Serial Number, and Model ID (e.g., CPH50).
+
+## 🛠️ Installation
 
 ### Via HACS (Recommended)
+1. Navigate to **HACS > Integrations**.
+2. Click the **three dots** (top right) > **Custom repositories**.
+3. Repository: `https://github.com/rananna/ha-chargepoint`
+4. Category: **Integration**.
+5. Click **Download**, then **Restart Home Assistant**.
 
-1.  Ensure **HACS** is installed in your Home Assistant instance.
-2.  Navigate to **HACS > Integrations**.
-3.  Click the **three dots** in the top right corner and select **Custom repositories**.
-4.  Paste the URL of this repository: `https://github.com/rananna/ha-chargepoint`
-5.  Select **Integration** as the category and click **Add**.
-6.  Search for **ChargePoint Custom Stealth** and click **Download**.
-7.  **Restart Home Assistant.**
+## ⚠️ Troubleshooting the "403" Lockout
+If ChargePoint detects too many rapid requests, it may serve a CAPTCHA.
+* **v1.1.3 Automatic Back-off:** The code will detect a 403 and automatically **wait 1 hour** before retrying to prevent a permanent IP ban.
+* **Manual Cool-down:** If the issue persists, **Disable** the integration for 24 hours. This is the only way to reset your IP reputation with DataDome.
 
-## Usage
-
-Once installed, go to `Settings > Devices & Services` and click `+ Add Integration`. Search for **ChargePoint** and enter your credentials.
-
-> [!CAUTION]
-> **Rate Limiting & Blocks:** If you see a `403 Forbidden` error in your logs, ChargePoint has flagged your IP. **Disable the integration for 12–24 hours** to allow the block to expire. Avoid polling intervals faster than 15 minutes to stay under the radar.
-
-## Energy Tracking
-
-This integration is fully compatible with the Home Assistant **Energy Dashboard**.
-1.  Add the `Energy Output` sensor as a grid consumption source.
-2.  Use the `Charge Cost` sensor as the "entity tracking the total costs."
-
-## New Binary Sensors
-
-This version includes a dedicated `binary_sensor` for your charger status. Unlike the standard text sensor, this allows for:
-* **Device Classes:** Correctly identified as a `plug` class for better UI rendering.
-* **Easy Automations:** Trigger alerts if the car isn't plugged in by a certain time (e.g., 9:00 PM).
-
-## Development and Contributing
-
-If you notice any issues, please create a GitHub issue describing the error and include any error messages or stack traces from your Home Assistant logs.
+## 📝 Credits
+Based on the original work by **@mbillow**. Updated and maintained by **@rananna** for improved stability and security compatibility.
