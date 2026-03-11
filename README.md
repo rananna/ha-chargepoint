@@ -1,32 +1,33 @@
-# ChargePoint for Home Assistant (Custom Stealth)
+# ChargePoint for Home Assistant (Custom Stealth) 🔌⚡
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.1.3-orange.svg)
+![Version](https://img.shields.io/badge/version-1.1.4-orange.svg)
 
-A "bulletproofed" fork of the original ChargePoint integration. This version is specifically optimized for **2026 security standards**, adding stealth layers to bypass DataDome bot-blocking and robust safety nets for the Home Assistant Energy Dashboard.
+A high-performance, "bulletproofed" fork of the ChargePoint integration. This version is specifically engineered to bypass modern cloud security blocks (DataDome) and provide robust data for the Home Assistant Energy Dashboard.
 
-## 🚀 Key Enhancements (v1.1.3)
+## 🚀 Why this fork? (v1.1.4)
 
-- **DataDome Bypass:** Injects a verified **Chrome 123** User-Agent to prevent the common `403 Forbidden` CAPTCHA lockout.
-- **Fail-Safe Math:** Custom helpers intercept `None` or `NaN` API responses during vehicle handshakes, preventing `TypeError` from crashing the integration.
-- **Energy Dashboard Stability:** Implemented `TOTAL_INCREASING` persistence. Sensors will hold their last known value if the API temporarily reports zero, preventing massive energy spikes.
-- **Binary "Plug" Logic:** Replaces the text-based status for cable connection with a native `binary_sensor` for immediate dashboard feedback and cleaner automations.
+Unlike the standard integration, this version includes specific fixes for 2026-era cloud requirements:
+
+- **Stealth Networking:** Uses a verified **Chrome 123** User-Agent to prevent the `403 Forbidden` CAPTCHA lockout.
+- **Active Control (New!):** Added native **Start**, **Stop**, and **Restart** button entities for direct charger control.
+- **Math Safety Nets:** Custom helpers prevent `TypeError` crashes when the API returns null or empty values during vehicle handshakes.
+- **Energy Stability:** Uses `TOTAL_INCREASING` persistence to prevent erratic energy spikes when charging sessions end.
+- **Auto-Backoff:** If a security block is detected, the integration automatically pauses for **1 hour** to protect your IP reputation.
 
 ## 📊 Available Entities
 
-### 👤 Account Level
-* **Account Balance:** Your current wallet balance and currency.
-* **User Profile:** (Attribute) Displays your ChargePoint User ID and Username.
+### 👤 Account & Profile
+* **Account Balance:** Current wallet credit and currency.
+* **User Info:** (Attributes) Username and User ID.
 
-### 🔌 Home Charger (Per Device)
-* **Charging Status:** Real-time state (Available, Charging, Finishing, etc.).
-* **Plugged In (Binary):** Native plug icon that reflects the physical connection.
-* **Power Output:** Current draw in **kW**.
-* **Energy Output:** Cumulative energy for the current session in **kWh**.
-* **Charging Time:** Duration of current session in seconds (auto-formatted by HA).
-* **Miles Added:** Estimated range added based on your vehicle's efficiency.
-* **Charge Cost:** Real-time cost calculation based on your utility rate.
-* **Technical Info:** (Attributes) Software version, Serial Number, and Model ID (e.g., CPH50).
+### 🔌 Home Flex Charger
+* **Status:** Real-time state (Available, Charging, Finishing).
+* **Power:** Current draw in **kW**.
+* **Energy:** Cumulative session energy in **kWh** (Energy Dashboard ready).
+* **Plugged In:** Native binary sensor for physical connection status.
+* **Buttons:** Start Charge, Stop Charge, and Restart Charger.
+* **Diagnostics:** Last Connected time, Signal Strength, and Firmware Version.
 
 ## 🛠️ Installation
 
@@ -37,10 +38,11 @@ A "bulletproofed" fork of the original ChargePoint integration. This version is 
 4. Category: **Integration**.
 5. Click **Download**, then **Restart Home Assistant**.
 
-## ⚠️ Troubleshooting the "403" Lockout
-If ChargePoint detects too many rapid requests, it may serve a CAPTCHA.
-* **v1.1.3 Automatic Back-off:** The code will detect a 403 and automatically **wait 1 hour** before retrying to prevent a permanent IP ban.
-* **Manual Cool-down:** If the issue persists, **Disable** the integration for 24 hours. This is the only way to reset your IP reputation with DataDome.
+## ⚠️ Dealing with 403 Forbidden / CAPTCHA
+If your logs show a `403` error, ChargePoint's security layer (DataDome) has flagged your IP. 
+1. **Don't Panic:** v1.1.4 will automatically stop retrying for 60 minutes.
+2. **The Fix:** If the block persists, **Disable** the integration for 12–24 hours. 
+3. **Pro-Tip:** Power cycling your home internet modem can often grab a fresh IP address and bypass the block immediately.
 
 ## 📝 Credits
-Based on the original work by **@mbillow**. Updated and maintained by **@rananna** for improved stability and security compatibility.
+Based on the original work by **@mbillow**. Maintained and enhanced by **@rananna** for superior stability and security.
