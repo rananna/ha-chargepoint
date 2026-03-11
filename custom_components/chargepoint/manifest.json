@@ -4,6 +4,7 @@
   "codeowners": ["@rananna"],
   "config_flow": true,
   "documentation": "https://github.com/rananna/ha-chargepoint-custom",
+  "issue_tracker": "https://github.com/rananna/ha-chargepoint-custom/issues",
   "iot_class": "cloud_polling",
   "requirements": ["python-chargepoint==1.10.0"],
   "version": "1.1.0"
