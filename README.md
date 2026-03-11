@@ -1,48 +1,50 @@
-# ChargePoint for Home Assistant (Custom Stealth) 🔌⚡
+# ChargePoint for Home Assistant (Custom Stealth) ⚡
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 ![Version](https://img.shields.io/badge/version-1.1.4-orange.svg)
 
-A high-performance, "bulletproofed" fork of the ChargePoint integration. This version is specifically engineered to bypass modern cloud security blocks (DataDome) and provide robust data for the Home Assistant Energy Dashboard.
+A professional-grade fork of the ChargePoint integration, hardened for 2026 security standards and optimized for Home Flex hardware (tested with Hyundai IONIQ 6).
 
-## 🚀 Why this fork? (v1.1.4)
+---
 
-Unlike the standard integration, this version includes specific fixes for 2026-era cloud requirements:
+## 🔄 Changes from Original Fork (@mbillow)
 
-- **Stealth Networking:** Uses a verified **Chrome 123** User-Agent to prevent the `403 Forbidden` CAPTCHA lockout.
-- **Active Control (New!):** Added native **Start**, **Stop**, and **Restart** button entities for direct charger control.
-- **Math Safety Nets:** Custom helpers prevent `TypeError` crashes when the API returns null or empty values during vehicle handshakes.
-- **Energy Stability:** Uses `TOTAL_INCREASING` persistence to prevent erratic energy spikes when charging sessions end.
-- **Auto-Backoff:** If a security block is detected, the integration automatically pauses for **1 hour** to protect your IP reputation.
+This fork was created to address critical stability issues and functional gaps in the original integration. Below are the key improvements:
 
-## 📊 Available Entities
+### 🛡️ Security & Anti-Bot Bypassing
+- **Chrome 123 Stealth Headers:** Replaces generic Python headers with a modern browser identity to bypass **DataDome/Cloudflare 403 Forbidden** blocks.
+- **Smart Back-off Logic:** If the API returns a 403 error, the integration automatically enters a "cool-down" period for **60 minutes** rather than spamming requests and risking a permanent IP ban.
 
-### 👤 Account & Profile
-* **Account Balance:** Current wallet credit and currency.
-* **User Info:** (Attributes) Username and User ID.
+### 🕹️ New Active Controls (Write Access)
+The original integration was "Read-Only." This version adds a new **Button Platform**:
+- **Start Charge:** Manually trigger a charging session from your dashboard.
+- **Stop Charge:** Cease an active session remotely.
+- **Restart Charger:** Soft-reboot the Home Flex hardware via the Cloud API.
 
-### 🔌 Home Flex Charger
-* **Status:** Real-time state (Available, Charging, Finishing).
-* **Power:** Current draw in **kW**.
-* **Energy:** Cumulative session energy in **kWh** (Energy Dashboard ready).
-* **Plugged In:** Native binary sensor for physical connection status.
-* **Buttons:** Start Charge, Stop Charge, and Restart Charger.
-* **Diagnostics:** Last Connected time, Signal Strength, and Firmware Version.
+### 📊 Data Integrity & Math Safety
+- **Zero-Value Protection:** Added safety helpers to prevent `TypeError` crashes when the API returns `None` or `NaN` (common during vehicle handshake).
+- **Energy Dashboard Persistence:** Implemented `TOTAL_INCREASING` logic with "Last Known Value" memory. This prevents massive negative spikes in the Energy Dashboard when a session ends and data temporarily resets to zero.
+
+### 📡 Advanced Diagnostics
+- **Wi-Fi Signal Strength (RSSI):** Real-time monitoring of your charger's connection quality to help troubleshoot dropouts.
+- **Last Cloud Heartbeat:** A timestamped sensor showing exactly when the charger last successfully communicated with ChargePoint.
+
+---
 
 ## 🛠️ Installation
 
-### Via HACS (Recommended)
-1. Navigate to **HACS > Integrations**.
-2. Click the **three dots** (top right) > **Custom repositories**.
-3. Repository: `https://github.com/rananna/ha-chargepoint`
-4. Category: **Integration**.
-5. Click **Download**, then **Restart Home Assistant**.
+1. Open **HACS** in Home Assistant.
+2. Go to **Integrations** > **Three Dots (Top Right)** > **Custom Repositories**.
+3. Add: `https://github.com/rananna/ha-chargepoint` as an **Integration**.
+4. Download **v1.1.4** and **Restart Home Assistant**.
 
-## ⚠️ Dealing with 403 Forbidden / CAPTCHA
-If your logs show a `403` error, ChargePoint's security layer (DataDome) has flagged your IP. 
-1. **Don't Panic:** v1.1.4 will automatically stop retrying for 60 minutes.
-2. **The Fix:** If the block persists, **Disable** the integration for 12–24 hours. 
-3. **Pro-Tip:** Power cycling your home internet modem can often grab a fresh IP address and bypass the block immediately.
+## ⚠️ Troubleshooting 403 Errors
+If your integration shows "Needs Attention" or a 403 in the logs:
+- **Do not restart it repeatedly.** The new code will automatically wait 1 hour.
+- If persistent, **Disable** for 24 hours to reset your IP reputation with DataDome.
+- Cycling your home modem to get a fresh IP address is often an instant fix.
+
+---
 
 ## 📝 Credits
-Based on the original work by **@mbillow**. Maintained and enhanced by **@rananna** for superior stability and security.
+Based on the original work by **@mbillow**. Maintained and enhanced by **@rananna** for superior reliability and control.
