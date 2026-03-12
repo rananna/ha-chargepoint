@@ -3,7 +3,7 @@ from homeassistant.const import Platform
 
 NAME = "ChargePoint (Custom Stealth)"
 DOMAIN = "chargepoint"
-VERSION = "1.1.8"
+VERSION = "1.1.9"
 ISSUE_URL = "https://github.com/rananna/ha-chargepoint/issues"
 
 PLATFORMS: list[Platform] = [
@@ -18,7 +18,6 @@ CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 OPTION_POLL_INTERVAL = "poll_interval"
 
-# Fixes config_flow.py ImportError
 POLL_INTERVAL_OPTIONS = {
     900: "15 minutes",
     1800: "30 minutes",
