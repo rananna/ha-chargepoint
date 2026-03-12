@@ -6,6 +6,7 @@ DOMAIN = "chargepoint"
 VERSION = "1.1.10"
 ISSUE_URL = "https://github.com/rananna/ha-chargepoint/issues"
 
+# Removed Platform.BUTTON to prevent attribute crashes
 PLATFORMS: list[Platform] = [
     Platform.SENSOR, 
     Platform.BINARY_SENSOR, 
