@@ -1,54 +1,82 @@
 # ChargePoint for Home Assistant (Custom Stealth) 🔌⚡
 
-<p align="center">
-  <img src="https://brands.home-assistant.io/_/chargepoint/logo.png" width="200" alt="ChargePoint Logo">
-</p>
+[![Version](https://img.shields.io/badge/version-1.1.10-gold.svg?style=for-the-badge)](https://github.com/rananna/ha-chargepoint)
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.3+-blue.svg?style=for-the-badge)
+![Hardware](https://img.shields.io/badge/Hardware-Home%20Flex%20(CPH50)-green.svg?style=for-the-badge)
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.1.6-orange.svg?style=for-the-badge)
-![Stability](https://img.shields.io/badge/Stability-Stealth--Hardened-green?style=for-the-badge)
-
-A high-performance, "bulletproofed" fork of the ChargePoint integration. Engineered to bypass 2026-era cloud security (DataDome) and optimized for the Hyundai IONIQ 6 and Home Flex hardware.
+A high-performance, hardened fork of the ChargePoint integration. Optimized for the **Hyundai IONIQ 6** and engineered for high-frequency cloud polling without triggering security blocks.
 
 ---
 
-## 🔄 Changes from Original Fork (@mbillow)
+## 🚀 Key Features
 
-This fork was created to resolve frequent `403 Forbidden` disconnections and transform the integration from "Read-Only" to "Full Control."
+### 🛡️ Stealth & Stability
+- **Anti-Fingerprinting:** Uses modern browser headers (Chrome 123) to bypass DataDome and cloud security barriers.
+- **Async Hardening:** Fully asynchronous loading prevents "Blocking call in the event loop" warnings common in Home Assistant 2026.
+- **Auto-Backoff:** Built-in intelligence to pause polling if 403 errors are detected, protecting your IP from potential bans.
 
-### 🛡️ Security & Stealth (The "Stealth" Layer)
-- **Chrome 123 Headers:** Mimics a modern desktop browser to bypass DataDome CAPTCHA blocks.
-- **Smart Back-off Logic:** Automatically enters a **60-minute cool-down** if a block is detected, preventing permanent IP bans.
-- **Critical Bugfix (v1.1.6):** Resolved `ImportError` and `NameError` in `switch.py` and `select.py` by standardizing internal constants.
+### ⚡ Full Hardware Control
+- **Dynamic Amperage:** Adjust your charging speed (16A to 48A) directly from the dashboard.
+- **Remote Session Toggle:** Start or stop charging sessions with a single switch.
+- **Model-Aware:** Automatically prefixes entities with your hardware model (e.g., `CPH50`) for easy identification.
 
-### 🕹️ Active Control (Write Access)
-Unlike the original, this version adds native **Switch**, **Select**, and **Button** platforms:
-- **Charge Control Switch:** Start or stop charging sessions with a single toggle.
-- **Amperage Selector:** Dynamically adjust charging speed (e.g., 6A to 48A) for load shedding.
-- **Restart Button:** Soft-reboot the Home Flex hardware via the Cloud API.
-
-### 📊 Data Integrity & Diagnostics
-- **Math Safety:** Prevents `TypeError` crashes on null/empty API responses during vehicle handshakes.
-- **Energy Dashboard Persistence:** Uses `TOTAL_INCREASING` logic to eliminate negative spikes in the Home Assistant Energy tab.
-- **Wi-Fi Signal (RSSI):** Monitor your charger's connection quality in real-time to troubleshoot garage dropouts.
+### 📊 Precision Metrics
+- **Currency Sync:** Automatically handles CAD formatting for Canadian users.
+- **Range Tracking:** Real-time estimates for `Miles Added` and `Miles / Hour Added`.
+- **Diagnostics:** Wi-Fi signal strength (RSSI) and precise Heartbeat monitoring.
 
 ---
 
-## 🛠️ Installation
+## 🧩 Supported Entities
 
-1. Open **HACS** in Home Assistant.
-2. Go to **Integrations** > **Three Dots (Top Right)** > **Custom Repositories**.
-3. Add `https://github.com/rananna/ha-chargepoint` as an **Integration**.
-4. Download **v1.1.6** and **Restart Home Assistant**.
-5. **Pro-Tip:** If upgrading from an older version, delete the integration from "Devices & Services" and re-add it to ensure the new entities (Select/Switch) are registered correctly.
+This integration provides a comprehensive set of entities to monitor and control your ChargePoint Home Flex.
 
-## ⚠️ Dealing with 403 Forbidden
-If you see a 403 error in your logs:
-- **Wait:** The integration will auto-retry in 1 hour.
-- **Cool Down:** If persistent, disable for 24 hours to reset your IP reputation.
-- **Modem Reset:** Power cycling your home router often grabs a fresh IP, bypassing the block immediately.
+### 🎮 Controls
+| Entity Name | Type | Description |
+| :--- | :--- | :--- |
+| **Charging Amperage Limit** | `select` | Adjust the maximum current (16A - 50A) to match your circuit. |
+| **Charge Control** | `switch` | Remotely start or stop a charging session. |
+
+### 📊 Metrics
+| Entity Name | Type | Description |
+| :--- | :--- | :--- |
+| **Charge Cost** | `sensor` | Real-time cost of the current/last session in **CAD**. |
+| **Energy Output** | `sensor` | Total energy delivered in the current session (kWh). |
+| **Power Output** | `sensor` | Real-time charging speed in kW. |
+| **Miles Added** | `sensor` | Estimated range added during the current session. |
+| **Miles / Hour Added** | `sensor` | Current charging efficiency (MPH). |
+| **Charging Time** | `sensor` | Duration of the current session (HH:MM:SS). |
+| **Account Balance** | `sensor` | Remaining credit on your ChargePoint account. |
+| **Status** | `sensor` | High-level status (e.g., "Ready", "Charging"). |
+| **Charger State** | `sensor` | Detailed internal state (e.g., "Not Charging", "In Use"). |
+
+### 🛠️ Diagnostics & Connectivity
+| Entity Name | Type | Description |
+| :--- | :--- | :--- |
+| **Plugged In** | `binary_sensor` | Returns `True` if the cable is physically connected to the vehicle. |
+| **Wi-Fi Signal** | `sensor` | Real-time signal strength (dBm) of the charger. |
+| **Last Heartbeat** | `sensor` | Timestamp of the last successful cloud synchronization. |
+
+---
+
+## 🛠️ Installation & Setup
+
+1. Copy the `chargepoint` folder to your `custom_components/` directory.
+2. **Restart Home Assistant.**
+3. Go to **Settings > Devices & Services > Add Integration** and search for "ChargePoint (Custom Stealth)".
+4. Enter your credentials.
+
+> **Note:** For the **IONIQ 6**, it is recommended to set your Amperage Limit to **48A** for optimal Level 2 home charging on a 60A circuit.
+
+---
+
+## 📈 Dashboard Integration
+This integration is 100% compatible with the **Energy Dashboard**. 
+- **Energy Source:** Use `sensor.cph50_energy_output`.
+- **Cost Tracking:** Use `sensor.cph50_charge_cost`.
 
 ---
 
 ## 📝 Credits
-Based on the original work by **@mbillow**. Enhanced and maintained by **@rananna** for superior reliability and control.
+Maintained by **@rananna**. Based on the original architecture by @mbillow. 
+*v1.1.10 is the stable production release.*
