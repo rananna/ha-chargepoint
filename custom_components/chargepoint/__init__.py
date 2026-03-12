@@ -26,17 +26,30 @@ from .const import (
 BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 _LOGGER = logging.getLogger(__package__)
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.BUTTON]
+PLATFORMS: list[Platform] = [
+    Platform.SENSOR, 
+    Platform.BINARY_SENSOR, 
+    Platform.BUTTON, 
+    Platform.SELECT, 
+    Platform.SWITCH
+]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     username, password = entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
     session_token = entry.data.get(CONF_ACCESS_TOKEN)
 
-    stealth_session = requests.Session()
-    stealth_session.headers.update({"User-Agent": BROWSER_USER_AGENT})
+    def create_client():
+        c = ChargePoint(username, password, session_token)
+        # Inject stealth headers into internal session
+        for attr in ("session", "_session"):
+            if hasattr(c, attr):
+                session_obj = getattr(c, attr)
+                if hasattr(session_obj, "headers"):
+                    session_obj.headers.update({"User-Agent": BROWSER_USER_AGENT})
+        return c
 
     try:
-        client = await hass.async_add_executor_job(ChargePoint, username, password, session_token, stealth_session)
+        client = await hass.async_add_executor_job(create_client)
         if client.session_token != session_token:
             hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_ACCESS_TOKEN: client.session_token})
     except Exception as exc:
@@ -86,5 +99,5 @@ class ChargePointChargerEntity(CoordinatorEntity):
         s = self.coordinator.data[ACCT_SESSION]
         return s if s and s.device_id == self.charger_id else None
 
-@dataclass
+@dataclass(kw_only=True)
 class ChargePointEntityRequiredKeysMixin: name_suffix: str
