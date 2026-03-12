@@ -41,3 +41,4 @@ async def async_setup_entry(hass, entry, async_add_entities):
     client, coordinator = hass.data[DOMAIN][entry.entry_id][DATA_CLIENT], hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
     entities = [ChargePointChargerChargeLimitSelectEntity(hass, client, coordinator, ChargePointSelectEntityDescription(key="charging_amperage_limit", name_suffix="Charging Amperage Limit", unit_of_measurement=UnitOfElectricCurrent.AMPERE, icon="mdi:tune-variant"), cid) for cid in coordinator.data[ACCT_HOME_CRGS].keys()]
     async_add_entities(entities)
+
