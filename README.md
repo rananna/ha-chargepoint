@@ -57,6 +57,8 @@ This integration provides a comprehensive set of entities to monitor and control
 | **Wi-Fi Signal** | `sensor` | Real-time signal strength (dBm) of the charger. |
 | **Last Heartbeat** | `sensor` | Timestamp of the last successful cloud synchronization. |
 
+> **Note on Hardware Controls:** Hardware-level commands such as "Reboot" are not supported by the ChargePoint residential API and have been removed to ensure system stability.
+
 ---
 
 ## 🛠️ Installation & Setup
