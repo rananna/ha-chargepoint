@@ -3,13 +3,12 @@ from homeassistant.const import Platform
 
 NAME = "ChargePoint (Custom Stealth)"
 DOMAIN = "chargepoint"
-VERSION = "1.1.9"
+VERSION = "1.1.10"
 ISSUE_URL = "https://github.com/rananna/ha-chargepoint/issues"
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR, 
     Platform.BINARY_SENSOR, 
-    Platform.BUTTON,
     Platform.SELECT,
     Platform.SWITCH
 ]
