@@ -57,3 +57,4 @@ async def async_setup_entry(hass, entry, async_add_entities):
     client, coordinator = hass.data[DOMAIN][entry.entry_id][DATA_CLIENT], hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
     entities = [ChargePointChargerSensorEntity(client, coordinator, d, cid) for cid in coordinator.data[ACCT_HOME_CRGS].keys() for d in CHARGER_SENSORS]
     async_add_entities(entities)
+
