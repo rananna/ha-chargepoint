@@ -19,6 +19,8 @@ CONF_PASSWORD = "password"
 OPTION_POLL_INTERVAL = "poll_interval"
 POLL_INTERVAL_DEFAULT = 900
 
+TOKEN_FILE_NAME = "chargepoint_session.json"
+
 ACCT_INFO = "account_information"
 ACCT_CRG_STATUS = "charging_status"
 ACCT_SESSION = "charging_session"
