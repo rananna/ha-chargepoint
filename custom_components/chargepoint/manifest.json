@@ -8,5 +8,5 @@
   "issue_tracker": "https://github.com/rananna/ha-chargepoint/issues",
   "iot_class": "cloud_polling",
   "requirements": ["python-chargepoint==1.10.0"],
-  "version": "1.1.10"
+  "version": "1.1.11"
 }
