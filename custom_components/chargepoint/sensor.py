@@ -53,8 +53,6 @@ CHARGER_SENSORS = [
     ChargePointSensorEntityDescription(key="status", name_suffix="Status", value=lambda e: str(e.charger_status.charging_status).title() if e.charger_status.plugged_in else "Not Connected"),
     ChargePointSensorEntityDescription(key="charger_state", name_suffix="Charger State", value=lambda e: str(e.session.charging_state).title() if e.session and e.session.charging_state else "Not Charging"),
     ChargePointSensorEntityDescription(key="account_balance", name_suffix="Account Balance", device_class=SensorDeviceClass.MONETARY, native_unit_of_measurement="CAD", icon="mdi:wallet", value=lambda e: _safe_float(getattr(e.coordinator.data[ACCT_INFO], 'balance', getattr(e.coordinator.data[ACCT_INFO], 'credit_balance', 0.0))) if e.coordinator.data.get(ACCT_INFO) else 0.0),
-    ChargePointSensorEntityDescription(key="rssi", name_suffix="Wi-Fi Signal", device_class=SensorDeviceClass.SIGNAL_STRENGTH, native_unit_of_measurement="dBm", entity_category=EntityCategory.DIAGNOSTIC, value=lambda e: getattr(e.technical_info, 'wifi_signal', None)),
-    ChargePointSensorEntityDescription(key="heartbeat", name_suffix="Last Heartbeat", device_class=SensorDeviceClass.TIMESTAMP, entity_category=EntityCategory.DIAGNOSTIC, value=lambda e: e.charger_status.last_connected_at if e.charger_status.last_connected_at and e.charger_status.last_connected_at.year > 1970 else None),
 ]
 
 async def async_setup_entry(hass, entry, async_add_entities):
