@@ -10,6 +10,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator, UpdateFailed
 from python_chargepoint import ChargePoint
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from .const import (
     ACCT_CRG_STATUS, ACCT_HOME_CRGS, ACCT_INFO, ACCT_SESSION,
@@ -33,9 +35,19 @@ class ChargePointEntityRequiredKeysMixin:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     def create_client():
         c = ChargePoint(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], entry.data.get(CONF_ACCESS_TOKEN))
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],
+            backoff_factor=1,
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
         for attr in ("session", "_session"):
             if hasattr(c, attr):
-                getattr(c, attr).headers.update({"User-Agent": BROWSER_USER_AGENT})
+                session = getattr(c, attr)
+                session.headers.update({"User-Agent": BROWSER_USER_AGENT})
+                session.mount("https://", adapter)
+                session.mount("http://", adapter)
         return c
 
     try:
