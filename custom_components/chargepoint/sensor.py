@@ -38,13 +38,13 @@ class ChargePointChargerSensorEntity(SensorEntity, ChargePointChargerEntity):
     @property
     def native_value(self):
         val = self.entity_description.value(self)
-        if self.entity_description.state_class == SensorStateClass.TOTAL_INCREASING:
+        if self.entity_description.state_class in [SensorStateClass.TOTAL_INCREASING, SensorStateClass.TOTAL]:
             if not self.session or val is None or val == 0.0: return self._last_val
             self._last_val = val
         return val
 
 CHARGER_SENSORS = [
-    ChargePointSensorEntityDescription(key="charge_cost", name_suffix="Charge Cost", device_class=SensorDeviceClass.MONETARY, state_class=SensorStateClass.TOTAL_INCREASING, native_unit_of_measurement="CAD", icon="mdi:cash-multiple", value=lambda e: _safe_float_none(e.session.total_amount) if e.session else None),
+    ChargePointSensorEntityDescription(key="charge_cost", name_suffix="Charge Cost", device_class=SensorDeviceClass.MONETARY, state_class=SensorStateClass.TOTAL, native_unit_of_measurement="CAD", icon="mdi:cash-multiple", value=lambda e: _safe_float_none(e.session.total_amount) if e.session else None),
     ChargePointSensorEntityDescription(key="energy_output", name_suffix="Energy Output", device_class=SensorDeviceClass.ENERGY, state_class=SensorStateClass.TOTAL_INCREASING, native_unit_of_measurement="kWh", value=lambda e: _safe_float_none(e.session.energy_kwh) if e.session else None),
     ChargePointSensorEntityDescription(key="power_output", name_suffix="Power Output", device_class=SensorDeviceClass.POWER, state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="kW", value=lambda e: _safe_float(e.session.power_kw) if e.session else 0.0),
     ChargePointSensorEntityDescription(key="kilometers_added", name_suffix="Kilometers Added", device_class=SensorDeviceClass.DISTANCE, state_class=SensorStateClass.TOTAL_INCREASING, icon="mdi:map-marker-distance", native_unit_of_measurement="km", value=lambda e: round(_safe_float_none(e.session.miles_added) * 1.60934, 2) if e.session and _safe_float_none(e.session.miles_added) is not None else None),
