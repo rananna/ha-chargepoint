@@ -1,8 +1,8 @@
-"""Switch platform for ChargePoint."""
+"""Switch platform for ChargePoint (Custom Stealth)."""
 import logging
 from typing import Any
 
-from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -29,9 +29,10 @@ async def async_setup_entry(
     client = hass.data[DOMAIN][config_entry.entry_id][DATA_CLIENT]
     coordinator = hass.data[DOMAIN][config_entry.entry_id][DATA_COORDINATOR]
 
-    entities = []
-    for charger_id in coordinator.data[ACCT_HOME_CRGS].keys():
-        entities.append(ChargePointChargingSwitch(client, coordinator, charger_id))
+    entities = [
+        ChargePointChargingSwitch(client, coordinator, charger_id) 
+        for charger_id in coordinator.data[ACCT_HOME_CRGS].keys()
+    ]
 
     async_add_entities(entities)
 
@@ -48,7 +49,7 @@ class ChargePointChargingSwitch(ChargePointChargerEntity, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return true if the charger is currently in use."""
-        if self.charger_status is None:
+        if not self.charger_status:
             return False
         return self.charger_status.charging_status == CHARGER_SESSION_STATE_IN_USE
 
