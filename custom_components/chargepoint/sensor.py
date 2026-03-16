@@ -19,7 +19,10 @@ def _safe_float_none(val) -> float | None:
 
 def _format_duration(ms):
     if not ms: return "00:00:00"
-    s = int(float(ms)) // 1000
+    try:
+        s = int(float(ms)) // 1000
+    except (ValueError, TypeError):
+        return "00:00:00"
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
     return f"{h:02d}:{m:02d}:{s:02d}"
@@ -39,7 +42,7 @@ class ChargePointChargerSensorEntity(SensorEntity, ChargePointChargerEntity):
     def native_value(self):
         val = self.entity_description.value(self)
         if self.entity_description.state_class in [SensorStateClass.TOTAL_INCREASING, SensorStateClass.TOTAL]:
-            if not self.session or val is None or val == 0.0: return self._last_val
+            if not self.session or val is None: return self._last_val
             self._last_val = val
         return val
 
