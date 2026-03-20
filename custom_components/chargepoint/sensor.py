@@ -41,8 +41,8 @@ class ChargePointChargerSensorEntity(SensorEntity, ChargePointChargerEntity):
     @property
     def native_value(self):
         val = self.entity_description.value(self)
-        if self.entity_description.state_class in [SensorStateClass.TOTAL_INCREASING, SensorStateClass.TOTAL]:
-            if not self.session or val is None: return self._last_val
+        if self.entity_description.state_class in [SensorStateClass.TOTAL_INCREASING, SensorStateClass.TOTAL] or self.entity_description.key == "session_charging_time":
+            if not self.session or val in [None, "00:00:00"]: return self._last_val
             self._last_val = val
         return val
 
